@@ -48,7 +48,16 @@ void loop() {
 // The returned value should be 0x00 if the MPU6050 has been successfully awakened.
       
   // Your implementation
-
+  
+  MPU6050_wakeup(); // 呼叫喚醒函式
+  uint8_t pwr_state = READ_PWR_MGMT_1_REG(); // 讀回狀態
+      
+  Serial.print("PWR_MGMT_1 = 0x");
+  Serial.println(pwr_state, HEX);
+      
+  if (pwr_state == 0x00) {
+    Serial.println("Success wake up!\n");
+  }
 /*******************************************************************************/
       delay(100);
     }
@@ -72,7 +81,24 @@ void loop() {
 // The output should match the expected result shown in the PA1 document.
 
   // Your implementation
-
+  Serial.println("Read five times of WHO_AM_I register.");
+  int successCount = 0;
+    
+  for (int i = 0; i < 5; i++) {
+    uint8_t reply = READ_WHO_AM_I_REG();
+      
+    Serial.print("reply = 0x");
+    Serial.println(reply, HEX);
+      
+    if (reply == 0x68) {
+      successCount++;
+    }
+  }
+    
+  if (successCount == 5) {
+    Serial.println("\nSuccess!");
+    Serial.println("Got 5 replies of MPU address.");
+  }
 /*******************************************************************************/
 
     testExecuted = true;
@@ -98,7 +124,13 @@ void loop() {
 void MPU6050_wakeup()
 {
   // Your implemteation
+  I2C_start();
+  I2C_write_byte((MPU_ADDR << 1) | 0); // 傳送 SLA+W (0xD0)
+  I2C_write_byte(PWR_MGMT_1);          // 指定 PWR_MGMT_1 暫存器 (0x6B)
+  I2C_write_byte(0x00);                // 寫入 0x00 清除 Sleep bit
+  I2C_stop();
 }
+
 
 
 // ----------------------------------------------------------------------------
@@ -125,6 +157,20 @@ void MPU6050_wakeup()
 uint8_t READ_PWR_MGMT_1_REG()
 {
   // Your implementation
+  I2C_start();
+  I2C_write_byte((MPU_ADDR << 1) | 0); // 傳送 SLA+W
+  I2C_write_byte(PWR_MGMT_1);            // 指定 PWR_MGMT_1 暫存器 
+  
+  I2C_repeated_start();                // 重複啟動，準備改變資料方向
+  
+  I2C_write_byte((MPU_ADDR << 1) | 1); // 傳送 SLA+R (0xD1)
+  
+  // 讀取 1 byte，傳入 false 代表主機要回傳 NACK (結束讀取)
+  uint8_t val = I2C_read_byte(false);  
+  
+  I2C_stop();
+  
+  return val;
 }
 
 
@@ -153,4 +199,18 @@ uint8_t READ_PWR_MGMT_1_REG()
 uint8_t READ_WHO_AM_I_REG()
 {
   // Your implementation
+  I2C_start();
+  I2C_write_byte((MPU_ADDR << 1) | 0); // 傳送 SLA+W
+  I2C_write_byte(WHO_AM_I);            // 指定 WHO_AM_I 暫存器 (0x75)
+  
+  I2C_repeated_start();                // 重複啟動，準備改變資料方向
+  
+  I2C_write_byte((MPU_ADDR << 1) | 1); // 傳送 SLA+R (0xD1)
+  
+  // 讀取 1 byte，傳入 false 代表主機要回傳 NACK (結束讀取)
+  uint8_t val = I2C_read_byte(false);  
+  
+  I2C_stop();
+  
+  return val;
 }
