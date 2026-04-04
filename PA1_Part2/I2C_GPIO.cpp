@@ -68,8 +68,6 @@ void I2C_start()
 {
   // TODO:
   // START condition: SDA goes LOW while SCL is HIGH, then pull SCL LOW to enter data phase.
-
-  
   SDA_Release();
   SCL_Release();
   delay_t();
@@ -88,19 +86,19 @@ void I2C_repeated_start()
   // Repeated START is the same electrical condition as START,
   // but the timing of use is different.
 
-  // 1. 在 SCL 為 LOW 時，先將 SDA 釋放 (拉高)
+  
   SDA_Release();
   delay_t();
 
-  // 2. 將 SCL 釋放 (拉高)
+  
   SCL_Release();
   delay_t();
 
-  // 3. 執行標準的 START 條件：在 SCL 為 HIGH 時拉低 SDA
+  
   SDA_Low();
   delay_t();
 
-  // 4. 將 SCL 拉低，繼續傳輸
+  
   SCL_Low();
   delay_t();
 }
@@ -131,22 +129,22 @@ bool I2C_read_bit()
   // 4) Pull SCL LOW
   // 5) Return sampled bit
 
-  // 1) 釋放 SDA，讓 Slave (從機) 可以控制這條線
+  
   SDA_Release();
   delay_t();
 
-  // 2) 將 SCL 拉高，進入讀取週期
+  
   SCL_Release();
   delay_t();
 
-  // 3) 在 SCL 為 HIGH 時，讀取 SDA 的狀態
+  
   bool bit_value = SDA_Read();
 
-  // 4) 將 SCL 拉低，結束這個位元的週期
+  
   SCL_Low();
   delay_t();
 
-  // 5) 回傳讀到的值 (HIGH 為 true, LOW 為 false)
+  
   return bit_value;
 }
 
@@ -179,12 +177,10 @@ bool I2C_write_byte(uint8_t data)
     data = data << 1; 
   }
 
-  // 2 & 3) 釋放 SDA 並讀取第 9 個時鐘的 ACK 位元
-  // 這裡直接呼叫我們剛剛寫好的 I2C_read_bit()
+  
   bool ack_bit = I2C_read_bit(); 
 
-  // 4) 根據規定：ACK 是 LOW (0)，NACK 是 HIGH (1)
-  // 我們的函式要求收到 ACK 要回傳 true，所以要反轉它
+  
   return !ack_bit;
 
 
@@ -201,20 +197,13 @@ uint8_t I2C_read_byte(bool ack)
   // 3) Return the byte
   uint8_t data = 0;
 
-  // 1) 接收 8 個資料位元 (MSB-first)
   for (int i = 0; i < 8; i++) {
     // 把目前的資料往左推一格，騰出最右邊的位置給新來的 bit
     data = data << 1; 
-
-    // 呼叫剛剛寫好的函式讀取一個 bit
-    if (I2C_read_bit()) {
-      // 如果讀到的是 HIGH (1)，就把 data 的最右邊那個 bit 變成 1
-      data = data | 0x01; 
-    }
-    // 如果讀到的是 LOW (0)，因為往左推的時候右邊本來就會補 0，所以不用特別處理
+    data = data | (uint8_t)I2C_read_bit(); 
+    
   }
 
-  // 2) 第 9 個時鐘週期：主機發送 ACK 或 NACK 給從機
   if (ack) {
     SDA_Low();     // 準備發送 ACK (LOW)
   } else {
@@ -223,12 +212,14 @@ uint8_t I2C_read_byte(bool ack)
   delay_t();
 
   // 敲擊第 9 次時脈 (Clock pulse)，把 ACK/NACK 訊號送出去
+
   SCL_Release();
   delay_t();
+
   SCL_Low();
   delay_t();
 
-  // 3) 回傳讀到的完整 8-bit 資料
+  
   return data;
 
 }

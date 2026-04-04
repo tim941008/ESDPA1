@@ -26,6 +26,7 @@ static const uint8_t MPU_ADDR = 0x68;
 // 3. MODE_IMU_PWM  : LED brightness is controlled by IMU accelerometer readings.
 
 // Your implementation
+
 enum FSMState
 {
   MODE_OFF,
@@ -34,7 +35,7 @@ enum FSMState
 };
 FSMState currentState = MODE_OFF; // 系統初始狀態
 
-// --- 時間追蹤變數 (用於 Non-blocking 採樣) ---
+// --- 時間追蹤變數  ---
 unsigned long lastAdcTime = 0;
 unsigned long lastImuTime = 0;
 
@@ -43,10 +44,7 @@ unsigned long lastImuTime = 0;
 unsigned long lastDebounceTime = 0;
 const unsigned long debounceDelay = 200;
 
-// 宣告三個模式的函式
-void OffMode();
-void AdcPwmMode();
-void ImuPwmMode();
+
 /*******************************************************************************/
 bool systemEnabled = false;
 
@@ -60,6 +58,9 @@ float getTilt(int16_t ax, int16_t ay, int16_t az);
 
 // Your implementation
 
+void OffMode();
+void AdcPwmMode();
+void ImuPwmMode();
 /*******************************************************************************/
 
 // ----------------------------------------------------------------------------
@@ -97,7 +98,8 @@ void loop()
       pinMode(LED_PIN, OUTPUT);
       analogWrite(LED_PIN, 0);        // 確保 LED 是關的
       pinMode(BTN_PIN, INPUT_PULLUP); // 設定按鈕為上拉輸入 (假設按鈕按下是 LOW)
-                                      /*******************************************************************************/
+                                      
+      /*******************************************************************************/
 
       MPU6050_wakeup();
       delay(100);
@@ -141,8 +143,8 @@ void loop()
 
   if ((millis() - lastDebounceTime) > debounceDelay && digitalRead(BTN_PIN) != HIGH)
   {
-    lastDebounceTime = millis(); // 更新去彈跳時間
-    // 使用 switch case 依序切換狀態
+    lastDebounceTime = millis(); 
+    
     switch (currentState)
     {
     case MODE_OFF:
@@ -197,7 +199,7 @@ void loop()
 // Your implementation
 void OffMode()
 {
-  analogWrite(LED_PIN, 0); // 什麼都不做，就是把燈關掉
+  digitalWrite(LED_PIN, LOW); 
 }
 /*******************************************************************************/
 
@@ -216,17 +218,17 @@ void OffMode()
 // Your implementation
 void AdcPwmMode()
 {
-  // 使用 millis() 檢查是否達到採樣間隔
+  
   if (millis() - lastAdcTime >= ADC_SAMPLE_INTERVAL_MS)
   {
     lastAdcTime = millis();
 
-    int adcValue = analogRead(POT_PIN);        // 讀取可變電阻 (0-1023)
-    int duty = map(adcValue, 0, 1023, 0, 255); // 映射到 PWM (0-255)
+    int adcValue = analogRead(POT_PIN);       
+    int duty = map(adcValue, 0, 1023, 0, 255); 
 
-    analogWrite(LED_PIN, duty); // 輸出亮度
+    analogWrite(LED_PIN, duty); 
 
-    // 依照作業要求的格式印出結果
+    
     Serial.print("Mode: ADC_PWM | ADC: ");
     Serial.print(adcValue);
     Serial.print(" | PWM: ");
@@ -274,7 +276,7 @@ void ImuPwmMode()
     else
     {
       Serial.println("IMU Read Error!");
-      return; // 讀取失敗就跳出
+      return; 
     }
     /*****************************************/
 
@@ -286,6 +288,7 @@ void ImuPwmMode()
     // 3. Output the duty cycle to the LED to control the brightness.
 
     // Your implementation
+
     // 將 tilt (0.0 ~ 1.0) 映射到 PWM (0 ~ 255)
     duty = (int)(tilt * 255.0f);
 
@@ -329,9 +332,9 @@ void MPU6050_wakeup()
 {
   // Your implemteation
   I2C_start();
-  I2C_write_byte((MPU_ADDR << 1) | 0); // 傳送 SLA+W (0xD0)
-  I2C_write_byte(PWR_MGMT_1);          // 指定 PWR_MGMT_1 暫存器 (0x6B)
-  I2C_write_byte(0x00);                // 寫入 0x00 清除 Sleep bit
+  I2C_write_byte((MPU_ADDR << 1) | 0); 
+  I2C_write_byte(PWR_MGMT_1);          
+  I2C_write_byte(0x00);                
   I2C_stop();
 }
 /*******************************************************************************/
@@ -374,25 +377,25 @@ bool readAccel_raw(int16_t *ax, int16_t *ay, int16_t *az)
   // 2. Use a repeated START to switch from write mode to read mode.
   // 3. Store the combined 16-bit signed results into *ax, *ay, and *az.
   // 4. Return true if the whole transaction succeeds; otherwise return false.
-  // 1. START 條件
+  
   I2C_start();
 
-  // 2. 傳送 SLA+W 並檢查 ACK
+  
   if (!I2C_write_byte((MPU_ADDR << 1) | 0))
     return false;
 
-  // 3. 傳送暫存器起始位址 (ACCEL_XOUT_H)
+  
   if (!I2C_write_byte(ACCEL_XOUT_H))
     return false;
 
-  // 4. Repeated START 準備切換為讀取模式
+  
   I2C_repeated_start();
 
-  // 5. 傳送 SLA+R
+  
   if (!I2C_write_byte((MPU_ADDR << 1) | 1))
     return false;
 
-  // 6. 連續讀取 6 個 Bytes。前 5 個要回傳 ACK (true)，最後 1 個回傳 NACK (false)
+  // 最後一個不用ack，讀夠了
   uint8_t xh = I2C_read_byte(true);
   uint8_t xl = I2C_read_byte(true);
   uint8_t yh = I2C_read_byte(true);
@@ -400,10 +403,10 @@ bool readAccel_raw(int16_t *ax, int16_t *ay, int16_t *az)
   uint8_t zh = I2C_read_byte(true);
   uint8_t zl = I2C_read_byte(false);
 
-  // 7. STOP 條件
+  
   I2C_stop();
 
-  // 8. 將高位元與低位元組合成 16-bit 有號整數
+  // 合併
   *ax = (int16_t)((xh << 8) | xl);
   *ay = (int16_t)((yh << 8) | yl);
   *az = (int16_t)((zh << 8) | zl);
