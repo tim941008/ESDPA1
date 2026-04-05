@@ -77,7 +77,6 @@ void address_scanner()
 {
   // Your implemteation
   int deviceCount = 0; // 用來記錄找到了幾個設備
-  Serial.println("Starting I2C scan...");
   // 掃描所有 7-bit 位址 
   for (uint8_t addr = 0; addr < 128; addr++) {
     I2C_start();
@@ -98,7 +97,7 @@ void address_scanner()
     }
   }
 
-  Serial.print("Scan done. Found: ");
+  Serial.print("\nScan done. Found: ");
   Serial.print(deviceCount);
   Serial.println(" device(s)");
 }

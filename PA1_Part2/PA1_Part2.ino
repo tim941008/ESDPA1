@@ -40,7 +40,6 @@ void loop() {
     if (cmd.equalsIgnoreCase("start")) {
       systemEnabled = true;
       testExecuted = false;
-
       Serial.println("System -> START");
 /*******************************************************************************/
 // First, call MPU6050_wakeup() to clear the sleep bit in PWR_MGMT_1.

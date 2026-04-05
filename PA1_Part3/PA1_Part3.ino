@@ -40,7 +40,8 @@ unsigned long lastAdcTime = 0;
 unsigned long lastImuTime = 0;
 
 // --- 按鈕去彈跳變數 ---
-
+bool lastBtnState = HIGH;
+bool currentBtnState = HIGH;
 unsigned long lastDebounceTime = 0;
 const unsigned long debounceDelay = 200;
 
@@ -141,10 +142,14 @@ void loop()
 
   // Your implementation
 
-  if ((millis() - lastDebounceTime) > debounceDelay && digitalRead(BTN_PIN) != HIGH)
+  currentBtnState = digitalRead(BTN_PIN);
+
+if (currentBtnState == LOW && lastBtnState == HIGH)
+{
+  if (millis() - lastDebounceTime > debounceDelay)
   {
-    lastDebounceTime = millis(); 
-    
+    lastDebounceTime = millis();
+
     switch (currentState)
     {
     case MODE_OFF:
@@ -163,6 +168,9 @@ void loop()
       break;
     }
   }
+}
+
+lastBtnState = currentBtnState;
 
   /*******************************************************************************/
 
