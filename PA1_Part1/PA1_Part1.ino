@@ -80,22 +80,20 @@ void address_scanner()
 
   Serial.println("Starting I2C scan...");
 
-  // 掃描所有 7-bit 位址 (從 0 到 127) 
+  // 掃描所有 7-bit 位址 
   for (uint8_t addr = 0; addr < 128; addr++) {
     
-    // 1. 發送 START 訊號 
+    
     I2C_start();
 
-    // 2. 組合 SLA+W (7-bit 位址左移 1 位，最低位補 0 代表寫入)
-    uint8_t sla_w = (addr << 1); 
+    uint8_t sla_w = (addr << 1); //LSB 是 R/W bit，寫入時為 0
 
-    // 3. 發送位址並檢查是否有收到 ACK
+    //發送位址並檢查是否有收到 ACK
     bool has_ack = I2C_write_byte(sla_w);
 
     
     I2C_stop();
 
-    
     if (has_ack) {
       
       Serial.print("Addr: ");

@@ -177,11 +177,7 @@ bool I2C_write_byte(uint8_t data)
     data = data << 1; 
   }
 
-  
-  bool ack_bit = I2C_read_bit(); 
-
-  
-  return !ack_bit;
+  return !I2C_read_bit(); // 讀取 ACK/NACK
 
 
 }
@@ -211,7 +207,7 @@ uint8_t I2C_read_byte(bool ack)
   }
   delay_t();
 
-  // 敲擊第 9 次時脈 (Clock pulse)，把 ACK/NACK 訊號送出去
+  // 把 ACK/NACK 訊號送出去
 
   SCL_Release();
   delay_t();
