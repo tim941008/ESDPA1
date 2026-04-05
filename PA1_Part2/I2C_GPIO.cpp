@@ -201,9 +201,9 @@ uint8_t I2C_read_byte(bool ack)
   }
 
   if (ack) {
-    SDA_Low();     // 準備發送 ACK (LOW)
+    SDA_Low();     // 發送 ACK 
   } else {
-    SDA_Release(); // 準備發送 NACK (HIGH，釋放總線)
+    SDA_Release(); // 發送 NACK 
   }
   delay_t();
 

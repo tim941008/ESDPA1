@@ -77,39 +77,27 @@ void address_scanner()
 {
   // Your implemteation
   int deviceCount = 0; // 用來記錄找到了幾個設備
-
   Serial.println("Starting I2C scan...");
-
   // 掃描所有 7-bit 位址 
   for (uint8_t addr = 0; addr < 128; addr++) {
-    
-    
     I2C_start();
-
     uint8_t sla_w = (addr << 1); //LSB 是 R/W bit，寫入時為 0
-
     //發送位址並檢查是否有收到 ACK
     bool has_ack = I2C_write_byte(sla_w);
 
-    
     I2C_stop();
 
     if (has_ack) {
-      
       Serial.print("Addr: ");
       Serial.print(addr, DEC);      // 印出十進制
       Serial.print(" (0x");
       if (addr < 16) Serial.print("0"); 
       Serial.print(addr, HEX);      // 印出十六進制
       Serial.println(") ACK");
-      
       deviceCount++; 
     }
-
-     
   }
 
-  
   Serial.print("Scan done. Found: ");
   Serial.print(deviceCount);
   Serial.println(" device(s)");

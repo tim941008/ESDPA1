@@ -379,38 +379,27 @@ bool readAccel_raw(int16_t *ax, int16_t *ay, int16_t *az)
   // 4. Return true if the whole transaction succeeds; otherwise return false.
   
   I2C_start();
-
-  
   if (!I2C_write_byte((MPU_ADDR << 1) | 0))
     return false;
-
-  
   if (!I2C_write_byte(ACCEL_XOUT_H))
     return false;
 
-  
-  I2C_repeated_start();
+  I2C_repeated_start(); // 改變資料方向
 
-  
   if (!I2C_write_byte((MPU_ADDR << 1) | 1))
     return false;
-
-  // 最後一個不用ack，讀夠了
   uint8_t xh = I2C_read_byte(true);
   uint8_t xl = I2C_read_byte(true);
   uint8_t yh = I2C_read_byte(true);
   uint8_t yl = I2C_read_byte(true);
   uint8_t zh = I2C_read_byte(true);
-  uint8_t zl = I2C_read_byte(false);
-
-  
+  uint8_t zl = I2C_read_byte(false);// 最後一個不用ack，讀夠了
   I2C_stop();
 
   // 合併
   *ax = (int16_t)((xh << 8) | xl);
   *ay = (int16_t)((yh << 8) | yl);
   *az = (int16_t)((zh << 8) | zl);
-
   return true;
 }
 /*******************************************************************************/
