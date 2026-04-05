@@ -222,7 +222,7 @@ void AdcPwmMode()
   if (millis() - lastAdcTime >= ADC_SAMPLE_INTERVAL_MS)
   {
     lastAdcTime = millis();
-
+    
     int adcValue = analogRead(POT_PIN);       
     int duty = map(adcValue, 0, 1023, 0, 255); 
 

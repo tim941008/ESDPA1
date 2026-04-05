@@ -82,20 +82,20 @@ void loop() {
 
   // Your implementation
   Serial.println("Read five times of WHO_AM_I register.");
-  int successCount = 0;
+  int Count = 0;
     
   for (int i = 0; i < 5; i++) {
+
     uint8_t reply = READ_WHO_AM_I_REG();
-      
     Serial.print("reply = 0x");
     Serial.println(reply, HEX);
-      
+    
     if (reply == 0x68) {
-      successCount++;
+      Count++;
     }
   }
     
-  if (successCount == 5) {
+  if (Count == 5) {
     Serial.println("\nSuccess!");
     Serial.println("Got 5 replies of MPU address.");
   }
@@ -195,7 +195,7 @@ uint8_t READ_PWR_MGMT_1_REG()
 
 uint8_t READ_WHO_AM_I_REG()
 {
-  // Your implementation
+   // Your implementation
   I2C_start();
   I2C_write_byte((MPU_ADDR << 1) | 0); // 傳送 SLA+W
   I2C_write_byte(WHO_AM_I);            // 指定 WHO_AM_I 暫存器 (0x75)
